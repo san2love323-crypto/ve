@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 from app import config
+from app.ui import AdminPanelView, embed_color, is_admin_manager
 from app.vending_machine import VendingMachine
 
 
@@ -17,6 +18,18 @@ def is_manager():
 class Manager(commands.Cog):
     def __init__(self, client):
         self.client = client
+
+    @commands.command(name='관리패널', aliases=['admin_panel'])
+    @commands.has_permissions(administrator=True)
+    @is_manager()
+    async def admin_panel(self, ctx) -> None:
+        """관리자 버튼 패널을 올립니다."""
+        embed = discord.Embed(
+            title='🛠️ 관리자 패널',
+            description='➕ 쿠폰 등록 · 🪙 크레딧 지급',
+            color=embed_color(),
+        )
+        await ctx.send(embed=embed, view=AdminPanelView())
 
     @commands.command(name='쿠폰등록', aliases=['insert_coupon'])
     @is_manager()
@@ -44,4 +57,6 @@ class Manager(commands.Cog):
 
 
 async def setup(client):
+    # 재시작 후에도 관리자 패널 버튼이 동작하도록 등록
+    client.add_view(AdminPanelView())
     await client.add_cog(Manager(client))
